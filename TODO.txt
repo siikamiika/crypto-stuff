@@ -22,6 +22,7 @@
     - https://en.wikipedia.org/wiki/Stream_cipher_attacks
     - https://en.wikipedia.org/wiki/Differential_cryptanalysis
     - https://en.wikipedia.org/wiki/Linear_cryptanalysis
+    - https://en.wikipedia.org/wiki/Malleability_(cryptography)
 - https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher
 - rng
 - https://pqcrypto.org/
