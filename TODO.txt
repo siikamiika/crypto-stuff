@@ -1,1 +1,24 @@
 - attacks
+    - https://en.wikipedia.org/wiki/Padding_oracle_attack
+    - https://en.wikipedia.org/wiki/Side-channel_attack
+        - https://en.wikipedia.org/wiki/Power_analysis
+        - https://en.wikipedia.org/wiki/Timing_attack
+        - https://en.wikipedia.org/wiki/Electromagnetic_attack
+    - https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_codebook_(ECB)
+    - https://en.wikipedia.org/wiki/RSA_Factoring_Challenge
+    - RSA MITM
+        - SSH
+    - https://en.wikipedia.org/wiki/Wiener%27s_attack
+    - https://en.wikipedia.org/wiki/Logjam_(computer_security)
+    - https://en.wikipedia.org/wiki/Coppersmith%27s_attack
+    - https://en.wikipedia.org/wiki/Chosen-plaintext_attack
+    - https://en.wikipedia.org/wiki/Known-plaintext_attack
+    - https://en.wikipedia.org/wiki/Chosen-ciphertext_attack
+    - https://en.wikipedia.org/wiki/Index_of_coincidence
+    - https://en.wikipedia.org/wiki/Length_extension_attack
+    - https://en.wikipedia.org/wiki/Replay_attack
+    - https://en.wikipedia.org/wiki/Rotational_cryptanalysis
+    - https://en.wikipedia.org/wiki/Traffic_analysis
+    - https://en.wikipedia.org/wiki/Stream_cipher_attacks
+- https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher
+- rng
