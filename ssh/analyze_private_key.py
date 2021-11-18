@@ -3,6 +3,7 @@
 import base64
 import sys
 import os
+import getpass
 
 from construct import (
     this,
@@ -19,6 +20,31 @@ from construct import (
     FixedSized,
 )
 
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+
+import bcrypt
+
+
+def derive_key_and_iv(passphrase, salt, rounds):
+    key_len = 32
+    iv_len = 16
+    key = bcrypt.kdf(passphrase, salt, key_len + iv_len, rounds)
+    return key[:key_len], key[key_len:key_len+iv_len]
+
+def decrypt_aes_ctr(key, iv, data):
+    ctr = Counter.new(
+        AES.block_size * 8,
+        initial_value=int.from_bytes(iv, 'big')
+    )
+    aes = AES.new(key, AES.MODE_CTR, counter=ctr)
+    return aes.decrypt(data)
+
+def decrypt_private_keys(data, passphrase, salt, rounds):
+    # https://github.com/openssh/openssh-portable/blob/ef5916b8acd9b1d2f39fad4951dae03b00dbe390/sshkey.c#L3887-L4013
+    # TODO other than aes256-ctr and bcrypt
+    key, iv = derive_key_and_iv(passphrase.encode('utf-8'), salt, rounds)
+    return decrypt_aes_ctr(key, iv, data)
 
 def read_ssh_private_key_bytes(filename):
     with open(filename, 'rb') as f:
@@ -126,13 +152,8 @@ def decode_ssh_private_key_bytes(data):
         'p' / MPInt,
         'q' / MPInt,
         'comment' / PascalString(Int32ub, 'ascii'),
-        'pad' / Bytes(
-            lambda this: (
-                len(this._.type) + 4
-                + sum(this[x].size for x in ['n', 'e', 'd', 'iqmp', 'p', 'q'])
-                + len(this.comment) + 4
-            ) % cipher_block_sizes[this._._._._.cryptoptions.ciphername]
-        ),
+        # whatever, it's always just one key anyway
+        'pad' / GreedyBytes,
     )
 
     SSHECDSAPrivkey = Struct(
@@ -157,15 +178,18 @@ def decode_ssh_private_key_bytes(data):
         }),
     )
 
-    SSHPrivkeysUnencrypted = Struct(
-        # TODO assert checkint1 == checkint2
-        'checkint1' / Int32ub,
-        'checkint2' / Int32ub,
-        'privkeys' / Array(
-            this._._.pubkeys.size,
-            SSHPrivkey
-        ),
-    )
+    def ssh_privkeys_struct(custom_size=None):
+        if custom_size:
+            size = custom_size
+        else:
+            size = this._._.pubkeys.size
+        SSHPrivkeysUnencrypted = Struct(
+            # TODO assert checkint1 == checkint2
+            'checkint1' / Int32ub,
+            'checkint2' / Int32ub,
+            'privkeys' / Array(size, SSHPrivkey),
+        )
+        return SSHPrivkeysUnencrypted
 
     SSHPrivkeys = Struct(
         'size' / Int32ub,
@@ -173,8 +197,8 @@ def decode_ssh_private_key_bytes(data):
             this.size,
             # _ means parent
             Switch(this._.cryptoptions.ciphername, {
-                'none': SSHPrivkeysUnencrypted,
-                'aes256-ctr': GreedyBytes
+                'none': ssh_privkeys_struct(),
+                'aes256-ctr': GreedyBytes,
             }),
         )
     )
@@ -189,7 +213,23 @@ def decode_ssh_private_key_bytes(data):
         # 'rest' / GreedyBytes
     )
 
-    print(SSHPrivkeyFile.parse(data))
+    parsed = SSHPrivkeyFile.parse(data)
+
+    print(parsed)
+
+    cryptopt = parsed.cryptoptions
+    if cryptopt.ciphername == 'aes256-ctr' and cryptopt.kdfname == 'bcrypt':
+        kdfopt = cryptopt.kdfoptions.value
+        print('Decrypting SSH private keys')
+        passphrase = getpass.getpass()
+        plaintext = decrypt_private_keys(
+            parsed.privkeys.value,
+            passphrase,
+            kdfopt.salt.value,
+            kdfopt.rounds
+        )
+        private_keys_decrypted = ssh_privkeys_struct(1).parse(plaintext)
+        print(private_keys_decrypted)
 
 def write_stdout_bytes(data):
     with os.fdopen(sys.stdout.fileno(), 'wb', closefd=False) as stdout:
