@@ -52,12 +52,26 @@ def decode_ssh_private_key_bytes(data):
 
     # private key encryption options format
 
+    SSHKDFOptions = Struct(
+        'salt' / Struct(
+            'size' / Int32ub,
+            'value' / Bytes(this.size),
+        ),
+        'rounds' / Int32ub,
+    )
+
     SSHPrivkeyCryptOptions = Struct(
         'ciphername' / PascalString(Int32ub, 'ascii'),
         'kdfname' / PascalString(Int32ub, 'ascii'),
         'kdfoptions' / Struct(
             'size' / Int32ub,
-            'value' / Bytes(this.size) # TODO parse
+            'value' / FixedSized(
+                this.size,
+                Switch(this._.ciphername, {
+                    'none': Struct(),
+                    'aes256-ctr': SSHKDFOptions
+                }),
+            ),
         ),
     )
 
@@ -175,7 +189,7 @@ def decode_ssh_private_key_bytes(data):
         # 'rest' / GreedyBytes
     )
 
-    print(SSHPrivkeyFile.parse(data).privkeys)
+    print(SSHPrivkeyFile.parse(data))
 
 def write_stdout_bytes(data):
     with os.fdopen(sys.stdout.fileno(), 'wb', closefd=False) as stdout:
