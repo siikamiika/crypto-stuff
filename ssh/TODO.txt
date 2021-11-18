@@ -1,4 +1,1 @@
-- decode
-    - ASN.1 DER
-    - https://www.thedigitalcatonline.com/blog/2018/04/25/rsa-keys/
 - encrypt + decrypt
