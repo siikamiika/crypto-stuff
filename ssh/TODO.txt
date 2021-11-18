@@ -1,1 +1,2 @@
-- encrypt + decrypt
+- encrypt + decrypt data using public and private key
+- encrypt/decrypt private key from within construct Struct when using bcrypt + aes-ctr (or other combo)
