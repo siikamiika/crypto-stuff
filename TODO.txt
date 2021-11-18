@@ -9,6 +9,7 @@
     - https://en.wikipedia.org/wiki/RSA_Factoring_Challenge
     - RSA MITM
         - SSH
+    - https://en.wikipedia.org/wiki/Dual_EC_DRBG
     - https://en.wikipedia.org/wiki/Wiener%27s_attack
     - https://en.wikipedia.org/wiki/Logjam_(computer_security)
     - https://en.wikipedia.org/wiki/Coppersmith%27s_attack
