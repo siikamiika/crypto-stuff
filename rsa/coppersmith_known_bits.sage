@@ -55,6 +55,7 @@ def run(c, e, N, nlen, rlen, p_known, test):
         _p = next_prime(base - randint(0, 2 ^ (rlen - 1)))
         _q = next_prime(base + randint(0, 2 ^ (rlen - 1)))
         N = _p * _q
+        print(f'N={N}')
 
     if not c:
         c = pow(int.from_bytes(b'ourhardworkbythesewordsguardedpleasedontsteal(c)applecomputerinc', 'big'), e, N)
@@ -78,7 +79,7 @@ def run(c, e, N, nlen, rlen, p_known, test):
     totient = (p - 1) * (q - 1)
 
     d = pow(e, -1, totient)
-    print(int(pow(c, d, N)).to_bytes(nlen // 8, 'big'))
+    print(int(pow(c, d, N)).to_bytes(nlen // 8, 'big').lstrip(b'\x00'))
     return True
 
 def main():
